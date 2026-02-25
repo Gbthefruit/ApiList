@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace ApiList.Models; 
-public class Tarefas {
+public class Tarefas : IValidatableObject {
 
 	[Key]
 	public int Id { get; set; }
@@ -30,5 +30,21 @@ public class Tarefas {
 	public Progresso? Progress { get; set; }
 
 	public Tarefas() { }
+
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) {
+	
+		if (!string.IsNullOrEmpty(this.Name)) {
+
+			var firstLetter = this.Name.ToString()[0].ToString();
+			if (firstLetter != firstLetter.ToUpper()) {
+
+				yield return new
+					ValidationResult("O nome da tarefa deve começar com letra maiúscula.",
+					new[] {
+						nameof(this.Name)
+					});
+			}
+		}
+	}
 
 }
