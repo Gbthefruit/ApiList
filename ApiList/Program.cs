@@ -1,4 +1,5 @@
 using ApiList.Context;
+using ApiList.Extensions;
 using ApiList.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
@@ -29,6 +30,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.ConfigureExceptionHandler();
 }
 
 // app.UseHttpsRedirection();
