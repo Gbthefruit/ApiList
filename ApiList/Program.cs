@@ -1,5 +1,6 @@
 using ApiList.Context;
 using ApiList.Extensions;
+using ApiList.Filters;
 using ApiList.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
@@ -19,6 +20,7 @@ string? mySqlConnection = builder.Configuration.GetConnectionString("TarefasConn
 builder.Services.AddDbContext<TarefaDbContext>(options =>
     options.UseMySql(mySqlConnection, ServerVersion.AutoDetect(mySqlConnection)));
 
+builder.Services.AddScoped<ApiLoggingFilter>();
  
 builder.Services.AddOpenApi();
 

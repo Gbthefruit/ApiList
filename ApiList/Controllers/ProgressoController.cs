@@ -1,4 +1,5 @@
 ﻿using ApiList.Context;
+using ApiList.Filters;
 using ApiList.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,7 @@ public class ProgressoController : ControllerBase {
 	}
 
 	[HttpGet("progressotarefas")]
+	[ServiceFilter(typeof(ApiLoggingFilter))]
 	public async Task<ActionResult<IEnumerable>> GetAllProgressoTarefasAsync() {
 
 		try {
