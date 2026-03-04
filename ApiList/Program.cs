@@ -1,6 +1,7 @@
 using ApiList.Context;
 using ApiList.Extensions;
 using ApiList.Filters;
+using ApiList.Logging;
 using ApiList.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
@@ -21,10 +22,14 @@ builder.Services.AddDbContext<TarefaDbContext>(options =>
     options.UseMySql(mySqlConnection, ServerVersion.AutoDetect(mySqlConnection)));
 
 builder.Services.AddScoped<ApiLoggingFilter>();
- 
+
+builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderConfiguration {
+
+    LogLevel = LogLevel.Information
+
+}));
+
 builder.Services.AddOpenApi();
-
-
 
 var app = builder.Build();
 
