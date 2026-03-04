@@ -13,60 +13,40 @@ namespace ApiList.Controllers;
 public class ProgressoController : ControllerBase {
 
 	private readonly TarefaDbContext _context;
+    private readonly ILogger<TarefasController> _logger;
 
-	public ProgressoController(TarefaDbContext context) {
+    public ProgressoController(TarefaDbContext context, ILogger<TarefasController> logger) {
 
 		_context = context;
+		_logger = logger;
+
 	}
 
 	[HttpGet]
 	public ActionResult<IEnumerable<Progresso>> Get() {
 
-		try {
-			var progresso = _context.Progresso.ToList();
-
-			if (progresso is null) {
-
-				return NotFound();
-			}
-
-			return Ok(progresso);
-		}
-		catch (Exception) {
-
-			return StatusCode(StatusCodes.Status500InternalServerError, "Ops... Ocorreu um erro interno no servidor, Contate o suporte!");
-		}
+		return _context.Progresso.ToList();
 	}
 
 	[HttpGet("progressotarefas")]
 	[ServiceFilter(typeof(ApiLoggingFilter))]
 	public async Task<ActionResult<IEnumerable>> GetAllProgressoTarefasAsync() {
-
-		try {
-			return await _context.Progresso.Include(t => t.Tarefas).AsNoTracking().ToListAsync();
-		}
-		catch (Exception) {
-
-			return StatusCode(StatusCodes.Status500InternalServerError, "Ops... Ocorreu um erro interno no servidor, Contate o suporte!");
-		}
+	
+		return await _context.Progresso.Include(t => t.Tarefas).AsNoTracking().ToListAsync();
+	
 	}
 
 	[HttpGet("{id:int:min(1)}")]
 	public async Task<ActionResult<IEnumerable<Progresso>>> GetIdProgressoTarefasAsync(int id) {
 
-		try {
-			var progressoAndTarefas = await _context.Progresso.Include(t => t.Tarefas).Where(p => p.Id == id).AsNoTracking().ToListAsync();
+        var progressoTarefas = await _context.Progresso.Include(t => t.Tarefas).Where(p => p.Id == id).AsNoTracking().ToListAsync();
 
-			if (progressoAndTarefas is null) {
+		if (progressoTarefas is null) {
 
-				return NotFound("Id Inválido. Tente 1 para os Não Finalizados e 2 para os Finalizado.");
-			}
-
-			return Ok(progressoAndTarefas);
+			_logger.LogWarning("Nenhuma tarefa encontrada");
+			return NotFound("Nenhuma tarefa encontrada");
 		}
-		catch (Exception) {
 
-			return StatusCode(StatusCodes.Status500InternalServerError, "Ops... Ocorreu um erro interno no servidor, Contate o suporte!");
-		}	
+		return Ok(progressoTarefas);
 	}
 }

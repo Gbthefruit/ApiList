@@ -10,106 +10,79 @@ namespace ApiList.Controllers;
 public class TarefasController : ControllerBase {
 
 	private readonly TarefaDbContext _context;
+	private readonly ILogger<TarefasController> _logger;
 
-	public TarefasController(TarefaDbContext context) {
+	public TarefasController(TarefaDbContext context, ILogger<TarefasController> logger) {
 
 		_context = context;
+		_logger = logger;
 	}
 
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<Tarefas>>> GetAsync() {
 
-		try {
-			var tarefa = await _context.Tarefas.AsNoTracking().Take(5).ToListAsync();
-			if (tarefa is null) {
-
-				return NotFound("Nenhum produto encontrado.");
-			}
-            return Ok(tarefa);
-		}
-		catch (Exception) {
-
-			return StatusCode(StatusCodes.Status500InternalServerError, "Ops... Ocorreu um erro interno no servidor, Contate o suporte!");
-		}
+		return await _context.Tarefas.Take(5).AsNoTracking().ToListAsync();
 	}
 
-	[HttpGet("{id:int:min(1)}", Name="ObterProduto")]
+	[HttpGet("{id:int:min(1)}", Name="ObterTarefa")]
 	public ActionResult<Tarefas> Get(int id) {
 
-		try {
-			var tarefa = _context.Tarefas.FirstOrDefault(t => t.Id == id);
+		var tarefa = _context.Tarefas.FirstOrDefault(t => id == t.Id);
+		if (tarefa is null) {
 
-			if (tarefa is null) {
-
-				return NotFound("Produto não encontrado.");
-			}
-
-			return Ok(tarefa);
+			_logger.LogWarning($"Tarefa com id={id} não encontrada.");
+			return NotFound($"Tarefa com id={id} não encontrada.");
 		}
-		catch (Exception) {
 
-			return StatusCode(StatusCodes.Status500InternalServerError, "Ops... Ocorreu um erro interno no servidor, Contate o suporte!");
-		}
+		return Ok(tarefa);
 	}
 
 	[HttpPost]
 	public ActionResult Post(Tarefas tarefa) {
+		
+		if (tarefa is null) {
 
-		try {
-			if (tarefa is null) {
-				return BadRequest("Dados inválidos.");
-			}
-			_context.Tarefas.Add(tarefa);
-			_context.SaveChanges();
-
-			return new CreatedAtRouteResult("ObterProduto",
-				new { id = tarefa.Id }, tarefa);
+			_logger.LogWarning("Dados Inválidos.");
+			return BadRequest("Dados Inválidos.");
 		}
-		catch (Exception) {
 
-			return StatusCode(StatusCodes.Status500InternalServerError, "Ops... Ocorreu um erro interno no servidor, Contate o suporte!");
-		}
+		_context.Tarefas.Add(tarefa);
+		_context.SaveChanges();
+		return new CreatedAtRouteResult("ObterTarefa", new {
+
+			id = tarefa.Id
+		}, tarefa);
 	}
 
 	[HttpPut("{id:int}")]
 	public ActionResult Put(int id, Tarefas tarefas) {
 
-		try {
-			if (id != tarefas.Id) {
+		if (id != tarefas.Id) {
 
-				return BadRequest("Dados inválidos.");
-			}
+            _logger.LogWarning("Dados Inválidos.");
+            return BadRequest("Dados Inválidos.");
+        }
 
-			_context.Entry(tarefas).State = EntityState.Modified;
-			_context.SaveChanges();
+		_context.Entry(tarefas).State = EntityState.Modified;
+		_context.SaveChanges();
 
-			return Ok(tarefas);
-		}
-		catch (Exception) {
-
-			return StatusCode(StatusCodes.Status500InternalServerError, "Ops... Ocorreu um erro interno no servidor, Contate o suporte!");
-		}
+		return Ok(tarefas);
 	}
 
 	[HttpDelete("{id:int}")]
 	public ActionResult Delete(int id) {
 
-		try {
-			var tarefa = _context.Tarefas.FirstOrDefault(t => t.Id == id);
+		var tarefa = _context.Tarefas.FirstOrDefault(t => id == t.Id);
 
-			if (tarefa is null) {
+		if (tarefa is null) {
 
-				return NotFound("Produto não encontrado.");
-			}
+            _logger.LogWarning($"Tarefa com id={id} não encontrada.");
+            return NotFound($"Tarefa com id={id} não encontrada.");
+        }
 
-			_context.Tarefas.Remove(tarefa);
-			_context.SaveChanges();
+		_context.Tarefas.Remove(tarefa);
+		_context.SaveChanges();
 
-			return Ok($"Tarefa excluida com êxito.");
-		}
-		catch (Exception) {
-
-			return StatusCode(StatusCodes.Status500InternalServerError, "Ops... Ocorreu um erro interno no servidor, Contate o suporte!");
-		}
+		return Ok(tarefa);
 	}
 }
