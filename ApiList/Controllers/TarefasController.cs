@@ -1,5 +1,6 @@
 ﻿using ApiList.Context;
 using ApiList.Models;
+using ApiList.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,25 +10,26 @@ namespace ApiList.Controllers;
 [Route("[controller]")]
 public class TarefasController : ControllerBase {
 
-	private readonly TarefaDbContext _context;
+	private readonly ITarefasRepository _repository;
 	private readonly ILogger<TarefasController> _logger;
 
-	public TarefasController(TarefaDbContext context, ILogger<TarefasController> logger) {
+	public TarefasController(ITarefasRepository repository, ILogger<TarefasController> logger) {
 
-		_context = context;
+		_repository = repository;
 		_logger = logger;
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Tarefas>>> GetAsync() {
+	public ActionResult<IEnumerable<Tarefas>> Get() {
 
-		return await _context.Tarefas.Take(5).AsNoTracking().ToListAsync();
+		var tarefas = _repository.GetTarefas();
+		return Ok(tarefas);
 	}
 
 	[HttpGet("{id:int:min(1)}", Name="ObterTarefa")]
 	public ActionResult<Tarefas> Get(int id) {
 
-		var tarefa = _context.Tarefas.FirstOrDefault(t => id == t.Id);
+		var tarefa = _repository.GetTarefasId(id);
 		if (tarefa is null) {
 
 			_logger.LogWarning($"Tarefa com id={id} não encontrada.");
@@ -46,12 +48,11 @@ public class TarefasController : ControllerBase {
 			return BadRequest("Dados Inválidos.");
 		}
 
-		_context.Tarefas.Add(tarefa);
-		_context.SaveChanges();
+		var tarefaCreated = _repository.Create(tarefa);
 		return new CreatedAtRouteResult("ObterTarefa", new {
 
-			id = tarefa.Id
-		}, tarefa);
+			id = tarefaCreated.Id
+		}, tarefaCreated);
 	}
 
 	[HttpPut("{id:int}")]
@@ -63,26 +64,21 @@ public class TarefasController : ControllerBase {
             return BadRequest("Dados Inválidos.");
         }
 
-		_context.Entry(tarefas).State = EntityState.Modified;
-		_context.SaveChanges();
+		var tarefaUpdated = _repository.Update(tarefas);
 
-		return Ok(tarefas);
+		return Ok(tarefaUpdated);
 	}
 
 	[HttpDelete("{id:int}")]
 	public ActionResult Delete(int id) {
 
-		var tarefa = _context.Tarefas.FirstOrDefault(t => id == t.Id);
+		var tarefaDeleted = _repository.Delete(id);
 
-		if (tarefa is null) {
+		if (tarefaDeleted is null) {
 
             _logger.LogWarning($"Tarefa com id={id} não encontrada.");
             return NotFound($"Tarefa com id={id} não encontrada.");
         }
-
-		_context.Tarefas.Remove(tarefa);
-		_context.SaveChanges();
-
-		return Ok(tarefa);
+		return Ok(tarefaDeleted);
 	}
 }

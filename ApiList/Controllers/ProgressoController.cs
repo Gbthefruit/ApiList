@@ -1,8 +1,7 @@
-﻿using ApiList.Context;
-using ApiList.Filters;
+﻿using ApiList.Filters;
 using ApiList.Models;
+using ApiList.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Diagnostics;
 
@@ -12,12 +11,12 @@ namespace ApiList.Controllers;
 [Route("[controller]")]
 public class ProgressoController : ControllerBase {
 
-	private readonly TarefaDbContext _context;
+	private readonly IProgressoRepository _repository;
     private readonly ILogger<TarefasController> _logger;
 
-    public ProgressoController(TarefaDbContext context, ILogger<TarefasController> logger) {
+    public ProgressoController(IProgressoRepository repository, ILogger<TarefasController> logger) {
 
-		_context = context;
+		_repository = repository;
 		_logger = logger;
 
 	}
@@ -25,27 +24,35 @@ public class ProgressoController : ControllerBase {
 	[HttpGet]
 	public ActionResult<IEnumerable<Progresso>> Get() {
 
-		return _context.Progresso.ToList();
+		var progressos = _repository.GetProgressos();
+		return Ok(progressos);
 	}
 
 	[HttpGet("progressotarefas")]
 	[ServiceFilter(typeof(ApiLoggingFilter))]
-	public async Task<ActionResult<IEnumerable>> GetAllProgressoTarefasAsync() {
+	public ActionResult<IEnumerable> GetAllProgressoTarefas() {
 	
-		return await _context.Progresso.Include(t => t.Tarefas).AsNoTracking().ToListAsync();
+		var progressoTarefas = _repository.GetProgressoTarefas();
+		
+		if (progressoTarefas is null) {
+
+            _logger.LogWarning("Nenhum progresso encontrado");
+            return NotFound("Nenhuma progresso encontrado");
+        }
+		return Ok(progressoTarefas);
 	
 	}
 
 	[HttpGet("{id:int:min(1)}")]
 	public async Task<ActionResult<IEnumerable<Progresso>>> GetIdProgressoTarefasAsync(int id) {
 
-        var progressoTarefas = await _context.Progresso.Include(t => t.Tarefas).Where(p => p.Id == id).AsNoTracking().ToListAsync();
+		var progressoTarefas = _repository.GetProgressoTarefasId(id);
 
 		if (progressoTarefas is null) {
 
-			_logger.LogWarning("Nenhuma tarefa encontrada");
-			return NotFound("Nenhuma tarefa encontrada");
-		}
+            _logger.LogWarning($"Nenhum progresso com id= {id} encontrado");
+            return NotFound($"Nenhuma progresso com id= {id} encontrado");
+        }
 
 		return Ok(progressoTarefas);
 	}

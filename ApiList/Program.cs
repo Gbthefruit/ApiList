@@ -2,7 +2,7 @@ using ApiList.Context;
 using ApiList.Extensions;
 using ApiList.Filters;
 using ApiList.Logging;
-using ApiList.Models;
+using ApiList.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -26,6 +26,9 @@ builder.Services.AddDbContext<TarefaDbContext>(options =>
     options.UseMySql(mySqlConnection, ServerVersion.AutoDetect(mySqlConnection)));
 
 builder.Services.AddScoped<ApiLoggingFilter>();
+
+builder.Services.AddScoped<IProgressoRepository, ProgressoRepository>();
+builder.Services.AddScoped<ITarefasRepository, TarefasRepository>();
 
 builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderConfiguration {
 
