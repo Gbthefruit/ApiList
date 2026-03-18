@@ -11,20 +11,19 @@ namespace ApiList.Controllers;
 [Route("[controller]")]
 public class ProgressoController : ControllerBase {
 
-	private readonly IProgressoRepository _repository;
+	private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<TarefasController> _logger;
 
-    public ProgressoController(IProgressoRepository repository, ILogger<TarefasController> logger) {
+    public ProgressoController(IUnitOfWork unitOfWork, ILogger<TarefasController> logger) {
 
-		_repository = repository;
-		_logger = logger;
+        _logger = logger;
+        _unitOfWork = unitOfWork;
+    }
 
-	}
-
-	[HttpGet]
+    [HttpGet]
 	public ActionResult<IEnumerable<Progresso>> Get() {
 
-		var progressos = _repository.GetProgressos();
+		var progressos = _unitOfWork.ProgressoRepository.GetProgressos();
 		return Ok(progressos);
 	}
 
@@ -32,7 +31,7 @@ public class ProgressoController : ControllerBase {
 	[ServiceFilter(typeof(ApiLoggingFilter))]
 	public ActionResult<IEnumerable> GetAllProgressoTarefas() {
 	
-		var progressoTarefas = _repository.GetProgressoTarefas();
+		var progressoTarefas = _unitOfWork.ProgressoRepository.GetProgressoTarefas();
 		
 		if (progressoTarefas is null) {
 
@@ -46,7 +45,7 @@ public class ProgressoController : ControllerBase {
 	[HttpGet("{id:int:min(1)}")]
 	public async Task<ActionResult<IEnumerable<Progresso>>> GetIdProgressoTarefasAsync(int id) {
 
-		var progressoTarefas = _repository.GetProgressoTarefasId(id);
+		var progressoTarefas = _unitOfWork.ProgressoRepository.GetProgressoTarefasId(id);
 
 		if (progressoTarefas is null) {
 

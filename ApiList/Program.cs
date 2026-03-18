@@ -29,6 +29,7 @@ builder.Services.AddScoped<ApiLoggingFilter>();
 
 builder.Services.AddScoped<IProgressoRepository, ProgressoRepository>();
 builder.Services.AddScoped<ITarefasRepository, TarefasRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderConfiguration {
 

@@ -10,26 +10,26 @@ namespace ApiList.Controllers;
 [Route("[controller]")]
 public class TarefasController : ControllerBase {
 
-	private readonly ITarefasRepository _repository;
+	private readonly IUnitOfWork _unitOfWork;
 	private readonly ILogger<TarefasController> _logger;
 
-	public TarefasController(ITarefasRepository repository, ILogger<TarefasController> logger) {
+    public TarefasController(IUnitOfWork unitOfWork, ILogger<TarefasController> logger) {
 
-		_repository = repository;
-		_logger = logger;
-	}
+        _logger = logger;
+        _unitOfWork = unitOfWork;
+    }
 
-	[HttpGet]
+    [HttpGet]
 	public ActionResult<IEnumerable<Tarefas>> Get() {
 
-		var tarefas = _repository.GetTarefas();
+		var tarefas = _unitOfWork.TarefasRepository.GetTarefas();
 		return Ok(tarefas);
 	}
 
 	[HttpGet("{id:int:min(1)}", Name="ObterTarefa")]
 	public ActionResult<Tarefas> Get(int id) {
 
-		var tarefa = _repository.GetTarefasId(id);
+		var tarefa = _unitOfWork.TarefasRepository.GetTarefasId(id);
 		if (tarefa is null) {
 
 			_logger.LogWarning($"Tarefa com id={id} não encontrada.");
@@ -48,7 +48,8 @@ public class TarefasController : ControllerBase {
 			return BadRequest("Dados Inválidos.");
 		}
 
-		var tarefaCreated = _repository.Create(tarefa);
+		var tarefaCreated = _unitOfWork.TarefasRepository.Create(tarefa);
+		_unitOfWork.Commit();
 		return new CreatedAtRouteResult("ObterTarefa", new {
 
 			id = tarefaCreated.Id
@@ -64,21 +65,22 @@ public class TarefasController : ControllerBase {
             return BadRequest("Dados Inválidos.");
         }
 
-		var tarefaUpdated = _repository.Update(tarefas);
-
+		var tarefaUpdated = _unitOfWork.TarefasRepository.Update(tarefas);
+		_unitOfWork.Commit();
 		return Ok(tarefaUpdated);
 	}
 
 	[HttpDelete("{id:int}")]
 	public ActionResult Delete(int id) {
 
-		var tarefaDeleted = _repository.Delete(id);
+		var tarefaDeleted = _unitOfWork.TarefasRepository.Delete(id);
 
 		if (tarefaDeleted is null) {
 
             _logger.LogWarning($"Tarefa com id={id} não encontrada.");
             return NotFound($"Tarefa com id={id} não encontrada.");
         }
+		_unitOfWork.Commit();
 		return Ok(tarefaDeleted);
 	}
 }

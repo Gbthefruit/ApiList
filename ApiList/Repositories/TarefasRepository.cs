@@ -24,23 +24,36 @@ public class TarefasRepository : ITarefasRepository {
 
     public Tarefas Create(Tarefas tarefa) {
 
+        if (tarefa is null) {
+        
+            throw new ArgumentNullException(nameof(tarefa));
+        }
         _context.Tarefas.Add(tarefa);
-        _context.SaveChanges();
+        //g_context.SaveChanges();
         return tarefa;
     }
 
     public Tarefas Update(Tarefas tarefa) {
 
+        if (tarefa is null) {
+
+            throw new ArgumentNullException(nameof(tarefa));
+        }
         _context.Entry(tarefa).State = EntityState.Modified;
-        _context.SaveChanges();
+        //_context.SaveChanges();
         return tarefa;
     }
 
     public Tarefas Delete(int id) {
 
         var tarefa = _context.Tarefas.Find(id);
+
+        if (tarefa is null) {
+
+            throw new ArgumentNullException(nameof(tarefa));
+        }
         _context.Tarefas.Remove(tarefa);
-        _context.SaveChanges();
+        //_context.SaveChanges();
         return tarefa;
     }
 }
