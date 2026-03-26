@@ -1,4 +1,6 @@
-﻿using ApiList.Filters;
+﻿using ApiList.DTOs;
+using ApiList.DTOs.Mappings;
+using ApiList.Filters;
 using ApiList.Models;
 using ApiList.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -21,38 +23,51 @@ public class ProgressoController : ControllerBase {
     }
 
     [HttpGet]
-	public ActionResult<IEnumerable<Progresso>> Get() {
+	public ActionResult<IEnumerable<ProgressoDTO>> Get() {
 
 		var progressos = _unitOfWork.ProgressoRepository.GetProgressos();
-		return Ok(progressos);
-	}
-
-	[HttpGet("progressotarefas")]
-	[ServiceFilter(typeof(ApiLoggingFilter))]
-	public ActionResult<IEnumerable> GetAllProgressoTarefas() {
-	
-		var progressoTarefas = _unitOfWork.ProgressoRepository.GetProgressoTarefas();
-		
-		if (progressoTarefas is null) {
+		if (progressos is null) {
 
             _logger.LogWarning("Nenhum progresso encontrado");
             return NotFound("Nenhuma progresso encontrado");
         }
-		return Ok(progressoTarefas);
+
+		var progressosDto = progressos.ToProgressoDTOList();
+
+		return Ok(progressosDto);
+	}
+
+	[HttpGet("progressotarefas")]
+	[ServiceFilter(typeof(ApiLoggingFilter))]
+	public ActionResult<IEnumerable<ProgressoDTO>> GetAllProgressosTarefas() {
+	
+		var progressosTarefas = _unitOfWork.ProgressoRepository.GetProgressoTarefas();
+		
+		if (progressosTarefas is null) {
+
+            _logger.LogWarning("Nenhum progresso encontrado");
+            return NotFound("Nenhuma progresso encontrado");
+        }
+
+		var progressosTarefasDto = progressosTarefas.ToProgressoTarefasDTOList();
+
+		return Ok(progressosTarefasDto);
 	
 	}
 
 	[HttpGet("{id:int:min(1)}")]
-	public async Task<ActionResult<IEnumerable<Progresso>>> GetIdProgressoTarefasAsync(int id) {
+	public async Task<ActionResult<IEnumerable<ProgressoDTO>>> GetIdProgressoTarefasAsync(int id) {
+
+		if (id > 2) {
+
+            _logger.LogWarning($"O Progresso com id= {id} não existe.");
+            return NotFound($"O Progresso com id= {id} não existe.");
+        }
 
 		var progressoTarefas = _unitOfWork.ProgressoRepository.GetProgressoTarefasId(id);
 
-		if (progressoTarefas is null) {
+		var progressoTarefasIdDto = progressoTarefas.ToProgressoTarefasDTOList();
 
-            _logger.LogWarning($"Nenhum progresso com id= {id} encontrado");
-            return NotFound($"Nenhuma progresso com id= {id} encontrado");
-        }
-
-		return Ok(progressoTarefas);
+		return Ok(progressoTarefasIdDto);
 	}
 }

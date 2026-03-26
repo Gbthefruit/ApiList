@@ -1,9 +1,8 @@
-﻿namespace ApiList.Repositories {
-    public interface IUnitOfWork {
+﻿namespace ApiList.Repositories; 
+public interface IUnitOfWork {
 
-        ITarefasRepository TarefasRepository { get; }
-        IProgressoRepository ProgressoRepository { get; }
+    ITarefasRepository TarefasRepository { get; }
+    IProgressoRepository ProgressoRepository { get; }
 
-        void Commit();
-    }
+    void Commit();
 }

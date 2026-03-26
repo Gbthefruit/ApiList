@@ -29,7 +29,6 @@ public class TarefasRepository : ITarefasRepository {
             throw new ArgumentNullException(nameof(tarefa));
         }
         _context.Tarefas.Add(tarefa);
-        //g_context.SaveChanges();
         return tarefa;
     }
 
@@ -40,7 +39,6 @@ public class TarefasRepository : ITarefasRepository {
             throw new ArgumentNullException(nameof(tarefa));
         }
         _context.Entry(tarefa).State = EntityState.Modified;
-        //_context.SaveChanges();
         return tarefa;
     }
 
@@ -53,7 +51,6 @@ public class TarefasRepository : ITarefasRepository {
             throw new ArgumentNullException(nameof(tarefa));
         }
         _context.Tarefas.Remove(tarefa);
-        //_context.SaveChanges();
         return tarefa;
     }
 }
