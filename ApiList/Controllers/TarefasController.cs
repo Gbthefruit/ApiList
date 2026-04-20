@@ -2,6 +2,7 @@
 using ApiList.DTOs.Mappings;
 using ApiList.Models;
 using ApiList.Repositories;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,13 +15,13 @@ public class TarefasController : ControllerBase {
 	private readonly IUnitOfWork _unitOfWork;
 	private readonly ILogger<TarefasController> _logger;
 
-    public TarefasController(IUnitOfWork unitOfWork, ILogger<TarefasController> logger) {
+	public TarefasController(IUnitOfWork unitOfWork, ILogger<TarefasController> logger) {
 
-        _logger = logger;
-        _unitOfWork = unitOfWork;
-    }
+		_logger = logger;
+		_unitOfWork = unitOfWork;
+	}
 
-    [HttpGet]
+	[HttpGet]
 	public ActionResult<IEnumerable<TarefasDTO>> Get() {
 
 		var tarefas = _unitOfWork.TarefasRepository.GetTarefas();
@@ -30,7 +31,7 @@ public class TarefasController : ControllerBase {
 		return Ok(tarefasDto);
 	}
 
-	[HttpGet("{id:int:min(1)}", Name="ObterTarefa")]
+	[HttpGet("{id:int:min(1)}", Name = "ObterTarefa")]
 	public ActionResult<Tarefas> Get(int id) {
 
 		var tarefa = _unitOfWork.TarefasRepository.GetTarefasId(id);
@@ -46,7 +47,7 @@ public class TarefasController : ControllerBase {
 
 	[HttpPost]
 	public ActionResult Post(TarefasDTO tarefaDto) {
-		
+
 		if (tarefaDto is null) {
 
 			_logger.LogWarning("Dados Inválidos.");
@@ -57,7 +58,7 @@ public class TarefasController : ControllerBase {
 		var tarefaCreated = _unitOfWork.TarefasRepository.Create(tarefa);
 		_unitOfWork.Commit();
 		var novaTarefaDto = tarefaCreated.ToTarefaDto();
-		
+
 		return new CreatedAtRouteResult("ObterTarefa", new {
 
 			id = novaTarefaDto.Id
@@ -69,9 +70,9 @@ public class TarefasController : ControllerBase {
 
 		if (id != tarefaDto.Id) {
 
-            _logger.LogWarning("Dados Inválidos.");
-            return BadRequest("Dados Inválidos.");
-        }
+			_logger.LogWarning("Dados Inválidos.");
+			return BadRequest("Dados Inválidos.");
+		}
 
 		var tarefas = tarefaDto.ToTarefa();
 		var tarefaUpdated = _unitOfWork.TarefasRepository.Update(tarefas);
@@ -88,13 +89,30 @@ public class TarefasController : ControllerBase {
 
 		if (tarefaDeleted is null) {
 
-            _logger.LogWarning($"Tarefa com id={id} não encontrada.");
-            return NotFound($"Tarefa com id={id} não encontrada.");
-        }
+			_logger.LogWarning($"Tarefa com id={id} não encontrada.");
+			return NotFound($"Tarefa com id={id} não encontrada.");
+		}
 
 		_unitOfWork.Commit();
 		var tarefaDto = tarefaDeleted.ToTarefaDto();
 
 		return Ok(tarefaDto);
+	}
+
+	[HttpPatch("{id}/UpdatePartial")]
+	public ActionResult Patch(int id, UpdateTarefaDto dto) {
+
+		var tarefa = _unitOfWork.TarefasRepository.GetTarefasId(id);
+
+		if (tarefa is null) {
+
+			return NotFound("Nenhum tarefa encontrada.");
+		}
+
+		tarefa.ApplyPatch(dto);
+
+		_unitOfWork.Commit();
+
+		return NoContent();
 	}
 }

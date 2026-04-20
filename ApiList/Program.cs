@@ -13,8 +13,7 @@ builder.Services.AddControllers(options => {
 
     options.Filters.Add(typeof(ApiExceptionFilter));
 
-}).AddJsonOptions(options =>
-{
+}).AddJsonOptions(options => {
     options.JsonSerializerOptions.Converters.Add(
         new JsonStringEnumConverter());
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
@@ -24,7 +23,7 @@ string? mySqlConnection = builder.Configuration.GetConnectionString("TarefasConn
 
 builder.Services.AddDbContext<TarefaDbContext>(options =>
     options.UseMySql(mySqlConnection, ServerVersion.AutoDetect(mySqlConnection)));
-
+                
 builder.Services.AddScoped<ApiLoggingFilter>();
 
 builder.Services.AddScoped<IProgressoRepository, ProgressoRepository>();

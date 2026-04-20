@@ -1,4 +1,5 @@
 ﻿using ApiList.Models;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ApiList.DTOs.Mappings {
     public static class TarefaDTOMappingExtensions {
@@ -51,6 +52,13 @@ namespace ApiList.DTOs.Mappings {
             }
 
             return tarefasDtoList;
+        }
+
+        public static void ApplyPatch(this Tarefas tarefa, UpdateTarefaDto dto) {
+
+            if (dto.Creation != null) {
+                tarefa.Creation = (DateTime)dto.Creation;
+            }
         }
     }
 }
