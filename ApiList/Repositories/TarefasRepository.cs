@@ -1,5 +1,6 @@
 ﻿using ApiList.Context;
 using ApiList.Models;
+using ApiList.Pagination;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiList.Repositories;
@@ -10,11 +11,13 @@ public class TarefasRepository : ITarefasRepository {
 
     public TarefasRepository(TarefaDbContext context) {
 
-        _context = context;
+        _context = context; 
     }
-    public IEnumerable<Tarefas> GetTarefas() {
+    public IEnumerable<Tarefas> GetTarefas(TarefasParameters tarefasParams) {
 
-        return _context.Tarefas.AsNoTracking().ToList();
+        return _context.Tarefas.OrderBy(p => p.Name)
+            .Skip((tarefasParams.pageNumber - 1) * tarefasParams.PageSize)
+            .Take(tarefasParams.PageSize).ToList();
     }
 
     public Tarefas GetTarefasId(int id) {

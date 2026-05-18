@@ -1,6 +1,7 @@
 ﻿using ApiList.DTOs;
 using ApiList.DTOs.Mappings;
 using ApiList.Models;
+using ApiList.Pagination;
 using ApiList.Repositories;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -21,10 +22,20 @@ public class TarefasController : ControllerBase {
 		_unitOfWork = unitOfWork;
 	}
 
-	[HttpGet]
-	public ActionResult<IEnumerable<TarefasDTO>> Get() {
+	//[HttpGet]
+	//public ActionResult<IEnumerable<TarefasDTO>> Get() {
 
-		var tarefas = _unitOfWork.TarefasRepository.GetTarefas();
+		//var tarefas = _unitOfWork.TarefasRepository.GetTarefas();
+
+		//var tarefasDto = tarefas.ToTarefasDtoList();
+
+		//return Ok(tarefasDto);
+	//}
+
+	[HttpGet("pagination")]
+	public ActionResult<IEnumerable<TarefasDTO>> Get([FromQuery] TarefasParameters tarefasParameters) {
+
+		var tarefas = _unitOfWork.TarefasRepository.GetTarefas(tarefasParameters);
 
 		var tarefasDto = tarefas.ToTarefasDtoList();
 
@@ -115,4 +126,4 @@ public class TarefasController : ControllerBase {
 
 		return NoContent();
 	}
-}
+}	
