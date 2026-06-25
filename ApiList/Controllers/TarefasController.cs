@@ -6,6 +6,7 @@ using ApiList.Repositories;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace ApiList.Controllers;
 
@@ -36,6 +37,18 @@ public class TarefasController : ControllerBase {
 	public ActionResult<IEnumerable<TarefasDTO>> Get([FromQuery] TarefasParameters tarefasParameters) {
 
 		var tarefas = _unitOfWork.TarefasRepository.GetTarefas(tarefasParameters);
+
+		var metadata = new {
+
+			tarefas.TotalCount,
+			tarefas.PageSize,
+			tarefas.CurrentPage,
+			tarefas.TotalPages,
+			tarefas.HasNext,
+			tarefas.HasPrevious
+		};
+
+		Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
 
 		var tarefasDto = tarefas.ToTarefasDtoList();
 

@@ -13,11 +13,17 @@ public class TarefasRepository : ITarefasRepository {
 
         _context = context; 
     }
-    public IEnumerable<Tarefas> GetTarefas(TarefasParameters tarefasParams) {
+    //public IEnumerable<Tarefas> GetTarefas(TarefasParameters tarefasParams) {
 
-        return _context.Tarefas.OrderBy(p => p.Name)
-            .Skip((tarefasParams.pageNumber - 1) * tarefasParams.PageSize)
-            .Take(tarefasParams.PageSize).ToList();
+    //    return _context.Tarefas.OrderBy(p => p.Name)
+    //        .Skip((tarefasParams.pageNumber - 1) * tarefasParams.PageSize)
+    //        .Take(tarefasParams.PageSize).ToList();
+    //}
+    public PagedList<Tarefas> GetTarefas(TarefasParameters tarefasParams) {
+
+        var tarefas = _context.Tarefas.OrderBy(t => t.Id).AsQueryable();
+        var tarefasOrdenadas = PagedList<Tarefas>.ToPagedList(tarefas, tarefasParams.PageNumber, tarefasParams.PageSize);
+        return tarefasOrdenadas;
     }
 
     public Tarefas GetTarefasId(int id) {
